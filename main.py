@@ -2,7 +2,7 @@ from google_play_scraper import Sort, reviews
 import requests
 from bs4 import BeautifulSoup
 import re
-from googletrans import Translator
+from googletrans import Translator #googletrans 4.0.0rc1
 import csv
 
 chars_to_replace = {"ı": "i", "ç": "c", "¢": "c", "ş": "s", "ü": "u", "ö": "o", "ğ": "g",
@@ -28,10 +28,10 @@ links = list(set(links))
 
 comments = []
 translator = Translator()
-#file = open("google_play_review_data6.csv", "w", newline="")
-#writer = csv.writer(file)
+file = open("google_play_review_data6.csv", "w", newline="")
+writer = csv.writer(file)
 first_line = ["comment", "positivity", "language_key"]
-# writer.writerow(first_line)
+writer.writerow(first_line)
 comment_count = 0
 positive_count = 0
 negative_count = 0
@@ -49,25 +49,20 @@ for link in links:
     try:
         extracted_data = result[0]
         for data in extracted_data:
-            print("new data")
             content = data["content"].strip().lower()
             score = data["score"]
             if score != 3 and translator.detect(content).lang == "tr":
-                print(content)
                 for char in content:
                     if not char.isascii():
                         if char in chars_to_replace:
                             content = content.replace(char, chars_to_replace[char])
-                            print("non-ascii char replaced")
                         else:
                             content = content.replace(char, "")
-                            print("non-ascii char removed")
                 positivity = 1 if score > 3 else 0
                 if content != "" and content not in comments:
                     line = [content, positivity, "tr"]
-                    print(content)
-                    #writer.writerow(line)
-                    #comments.append(content)
+                    writer.writerow(line)
+                    comments.append(content)
 
                     print(score)
                     print(comment_count,line)
@@ -77,4 +72,7 @@ for link in links:
     except Exception as e:
         print(f"exception: {e}")
 
+print(f"positive comments: {positive_count}")
+print(f"negative comments: {negative_count}")
+print(f"total: {comment_count}")
 
